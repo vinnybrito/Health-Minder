@@ -1,7 +1,10 @@
 package br.com.fiap.HealthMinder.controller;
 
-import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -11,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.com.fiap.HealthMinder.model.Usuario;
@@ -27,8 +31,17 @@ public class UsuarioController {
     UsuarioRepository repository;
 
     @GetMapping
-    public List<Usuario> index() {
-        return repository.findAll();
+    public Page<Usuario> index(
+        @PageableDefault(size = 5, sort = "tipoSanguineo", direction = Sort.Direction.DESC) 
+        Pageable pageRequest, 
+        @RequestParam(required = false) String busca) {
+
+        log.info("Buscando todos os usuários");
+
+        if (busca == null || busca.isEmpty())
+            return repository.findAll(pageRequest);
+
+        return repository.findByTipoSanguineoContainingIgnoreCase(busca, pageRequest);
     }
 
     @PostMapping
